@@ -20,6 +20,13 @@ ALLOWED_EXTENSIONS = [
     "TIFF",
 ]
 
+WELCOME_TEXT = """
+Add the images to be stitched together.
+In any order.
+
+Best for scanned images, not suitable for panorama photos.
+"""
+
 
 # TODO:
 # - [x] add disable button on process
@@ -60,6 +67,7 @@ class DeletableImage(ft.UserControl):
                     content=ft.Image(
                         src=self.file_path,
                     ),
+                    image_fit=ft.ImageFit.CONTAIN,
                     alignment=ft.alignment.center,
                     padding=ft.padding.only(
                         left=12, right=12, top=40, bottom=12
@@ -131,12 +139,26 @@ class StitchApp(ft.UserControl):
                 ft.Stack(
                     expand=True,
                     controls=[
-                        ft.Container(
-                            ref=self.welcom_screen,
+                        ft.Stack(
                             expand=True,
-                            border=ft.border.all(1, "#333333"),
-                            border_radius=ft.border_radius.all(5),
+                            ref=self.welcom_screen,
                             visible=True,
+                            controls=[
+                                ft.Container(
+                                    border=ft.border.all(1, "#333333"),
+                                    border_radius=ft.border_radius.all(5),
+                                ),
+                                ft.Container(
+                                    padding=40,
+                                    alignment=ft.alignment.center,
+                                    content=ft.Text(
+                                        WELCOME_TEXT,
+                                        size=20,
+                                        weight=ft.FontWeight.W_100,
+                                        text_align = ft.TextAlign.CENTER
+                                    ),
+                                ),
+                            ],
                         ),
                         ft.GridView(
                             ref=self.stitching_images,
@@ -191,6 +213,7 @@ class StitchApp(ft.UserControl):
                         ft.Container(
                             ref=self.result_image_container,
                             expand=True,
+                            image_fit=ft.ImageFit.CONTAIN,
                             content=ft.Image(
                                 ref=self.result_image,
                                 src="",
@@ -240,12 +263,12 @@ class StitchApp(ft.UserControl):
                 self.save_result_image_button.current.visible = False
 
             case self.states.IS_STITCHING_IMAGES:
-                self.welcom_screen.current.visible=False
-                self.stitching_images.current.visible=True
+                self.welcom_screen.current.visible = False
+                self.stitching_images.current.visible = True
 
             case self.states.IS_NOT_STITCHING_IMAGES:
-                self.welcom_screen.current.visible=True
-                self.stitching_images.current.visible=False
+                self.welcom_screen.current.visible = True
+                self.stitching_images.current.visible = False
 
             case self.states.READY:
                 self.process_button.current.disabled = False
@@ -294,7 +317,7 @@ class StitchApp(ft.UserControl):
         if len(self.stitching_images.current.controls) > 0:
             self.set_state(self.states.IS_STITCHING_IMAGES)
         else:
-            self.set_state(self.states.IS_NOT_STITCHING_IMAGES) 
+            self.set_state(self.states.IS_NOT_STITCHING_IMAGES)
 
     def on_process_button(self, e):
         self.set_state(self.states.WORKING)
@@ -324,8 +347,8 @@ class StitchApp(ft.UserControl):
 def main(page: ft.Page):
     page.title = "Image Stitcher"
 
-    page.window_min_width = 360
-    page.window_min_height = 800
+    page.window_min_width = 900
+    page.window_min_height = 600
 
     page.padding = 30
     page.theme_mode = ft.ThemeMode.DARK
