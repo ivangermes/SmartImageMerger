@@ -28,7 +28,7 @@ ALLOWED_EXTENSIONS = [
 # - [x] add output images preview
 # - [x] delete in files
 # - [x] make states
-# - [ ] styling
+# - [x] styling
 # - [x] refactoring
 # - [ ] type cheickng
 # - [ ] add comments
@@ -60,7 +60,7 @@ class DeletableImage(ft.UserControl):
                     content=ft.Image(
                         src=self.file_path,
                     ),
-                    alignment = ft.alignment.center,
+                    alignment=ft.alignment.center,
                     padding=ft.padding.only(
                         left=12, right=12, top=40, bottom=12
                     ),
@@ -70,7 +70,6 @@ class DeletableImage(ft.UserControl):
                         icon=ft.icons.CLOSE,
                         icon_color="gray",
                         icon_size=20,
-                        tooltip="Remove image",
                         on_click=self.remove_clicked,
                     ),
                     alignment=ft.alignment.top_right,
@@ -97,9 +96,19 @@ class StitchApp(ft.UserControl):
 
     def build(self):
         self.states = Enum(
-            "states", ["START", "READY", "NOT_READY", "WORKING", "DONE"]
+            "states",
+            [
+                "START",
+                "IS_STITCHING_IMAGES",
+                "IS_NOT_STITCHING_IMAGES",
+                "READY",
+                "NOT_READY",
+                "WORKING",
+                "DONE",
+            ],
         )
 
+        self.welcom_screen = ft.Ref[ft.Container]()
         self.stitching_images = ft.Ref[ft.GridView]()
         self.add_image_button = ft.Ref[ft.ElevatedButton]()
         self.process_button = ft.Ref[ft.ElevatedButton]()
@@ -118,12 +127,26 @@ class StitchApp(ft.UserControl):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             expand=True,
             controls=[
-                ft.GridView(
-                    ref=self.stitching_images,
+                ft.Text("Images to stitch"),
+                ft.Stack(
                     expand=True,
-                    runs_count=2,
-                    spacing=10,
-                    auto_scroll=True,
+                    controls=[
+                        ft.Container(
+                            ref=self.welcom_screen,
+                            expand=True,
+                            border=ft.border.all(1, "#333333"),
+                            border_radius=ft.border_radius.all(5),
+                            visible=True,
+                        ),
+                        ft.GridView(
+                            ref=self.stitching_images,
+                            expand=True,
+                            runs_count=2,
+                            spacing=10,
+                            auto_scroll=True,
+                            visible=False,
+                        ),
+                    ],
                 ),
                 ft.ElevatedButton(
                     ref=self.add_image_button,
@@ -151,31 +174,41 @@ class StitchApp(ft.UserControl):
             expand=True,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
-                ft.ProgressRing(
-                    ref=self.preloader,
-                    width=32,
-                    height=32,
-                    stroke_width=4,
-                    visible=False,
-                ),
-                ft.Container(
+                ft.Text("Result image"),
+                ft.Stack(
                     expand=True,
-                    content=ft.Container(
-                        ref=self.result_image_container,
-                        content=ft.Image(
-                            ref=self.result_image,
-                            src="",
+                    controls=[
+                        ft.Container(
+                            content=ft.ProgressRing(
+                                ref=self.preloader,
+                                width=32,
+                                height=32,
+                                stroke_width=4,
+                                visible=False,
+                            ),
+                            alignment=ft.alignment.center,
                         ),
-                        bgcolor="#666666",
-                        padding=10,
-                        border=ft.border.all(1, ft.colors.BLACK),
-                        visible=False,
-                    ),
+                        ft.Container(
+                            ref=self.result_image_container,
+                            expand=True,
+                            content=ft.Image(
+                                ref=self.result_image,
+                                src="",
+                            ),
+                            bgcolor="#333333",
+                            padding=10,
+                            border_radius=ft.border_radius.all(5),
+                            border=ft.border.all(1, ft.colors.BLACK),
+                            visible=False,
+                        ),
+                    ],
                 ),
                 ft.ElevatedButton(
                     ref=self.save_result_image_button,
                     visible=False,
                     text="Save image",
+                    height=50,
+                    width=150,
                     icon="FILE_DOWNLOAD_OUTLINED",
                     on_click=lambda _: self.file_saver.save_file(
                         dialog_title="Save images",
@@ -199,10 +232,20 @@ class StitchApp(ft.UserControl):
     def set_state(self, state):  # TODO: add self.states
         match state:
             case self.states.START:
+                self.welcom_screen = True
+                self.stitching_images = False
                 self.process_button.current.disabled = True
                 self.preloader.current.visible = False
                 self.result_image_container.current.visible = False
                 self.save_result_image_button.current.visible = False
+
+            case self.states.IS_STITCHING_IMAGES:
+                self.welcom_screen.current.visible=False
+                self.stitching_images.current.visible=True
+
+            case self.states.IS_NOT_STITCHING_IMAGES:
+                self.welcom_screen.current.visible=True
+                self.stitching_images.current.visible=False
 
             case self.states.READY:
                 self.process_button.current.disabled = False
@@ -233,6 +276,11 @@ class StitchApp(ft.UserControl):
         else:
             self.set_state(self.states.NOT_READY)
 
+        if len(self.stitching_images.current.controls) > 0:
+            self.set_state(self.states.IS_STITCHING_IMAGES)
+        else:
+            self.set_state(self.states.IS_NOT_STITCHING_IMAGES)
+
     def on_pick_files_dialog(self, e: ft.FilePickerResultEvent):
         for file in e.files:
             im = DeletableImage(file.path, self.stitching_image_delete)
@@ -242,6 +290,11 @@ class StitchApp(ft.UserControl):
             self.set_state(self.states.READY)
         else:
             self.set_state(self.states.NOT_READY)
+
+        if len(self.stitching_images.current.controls) > 0:
+            self.set_state(self.states.IS_STITCHING_IMAGES)
+        else:
+            self.set_state(self.states.IS_NOT_STITCHING_IMAGES) 
 
     def on_process_button(self, e):
         self.set_state(self.states.WORKING)
