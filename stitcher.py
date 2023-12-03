@@ -52,22 +52,18 @@ class DeletableImage(ft.UserControl):
         return ft.Stack(
             [
                 ft.Container(
-                    # expand=True,
-                    # image_fit=ft.ImageFit.SCALE_DOWN,
-                    # alignment=ft.alignment.top_right,
-                    content=ft.Image(
-                        # expand=True,
-                        src=self.file_path,
-                        fit=ft.ImageFit.SCALE_DOWN,
-                        # width=200,
-                        # height=200
-                    ),
-                    bgcolor="#666666",
+                    bgcolor="#333333",
                     border_radius=ft.border_radius.all(5),
-                    # padding=ft.padding.only(
-                    #     left=10, right=10, top=40, bottom=10
-                    # ),
                     border=ft.border.all(1, ft.colors.BLACK),
+                ),
+                ft.Container(
+                    content=ft.Image(
+                        src=self.file_path,
+                    ),
+                    alignment = ft.alignment.center,
+                    padding=ft.padding.only(
+                        left=12, right=12, top=40, bottom=12
+                    ),
                 ),
                 ft.Container(
                     content=ft.IconButton(
@@ -80,8 +76,6 @@ class DeletableImage(ft.UserControl):
                     alignment=ft.alignment.top_right,
                 ),
             ],
-            # width=220,
-            # height=220,
             expand=True,
         )
 
@@ -128,10 +122,7 @@ class StitchApp(ft.UserControl):
                     ref=self.stitching_images,
                     expand=True,
                     runs_count=2,
-                    max_extent=400,
-                    child_aspect_ratio=1.0,
-                    spacing=5,
-                    run_spacing=5,
+                    spacing=10,
                     auto_scroll=True,
                 ),
                 ft.ElevatedButton(
@@ -199,7 +190,7 @@ class StitchApp(ft.UserControl):
                 expand=True,
                 controls=[
                     left_column,
-                    ft.VerticalDivider(),
+                    ft.VerticalDivider(width=30),
                     right_column,
                 ],
             )
@@ -283,7 +274,7 @@ def main(page: ft.Page):
     page.window_min_width = 360
     page.window_min_height = 800
 
-    page.padding = 20
+    page.padding = 30
     page.theme_mode = ft.ThemeMode.DARK
 
     page.add(StitchApp(expand=True, page=page))
