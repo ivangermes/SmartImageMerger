@@ -1,26 +1,26 @@
 [project]
+name = "ImageStitcher"
+version = "0.2"
+
 requires-python = ">=3.11"
 
-[tool.black]
-line-length = 80
+dependencies = [
+  "flet==0.14.0",
+  "stitching==0.5.3",
+  # "opencv-python>=4.0.0.0",
+]
+
 
 [tool.ruff]
 line-length = 80
 
 [tool.ruff.lint]
-# Add the `line-too-long` rule to the enforced rule set. By default, Ruff omits rules that
-# overlap with the use of a formatter, like Black, but we can override this behavior by
-# explicitly adding the rule.
 select = ["E", "F"]
 
-
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = "flet.*"
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "stitching.*"
 ignore_missing_imports = true
-
-
-
+module = "stitching.*"

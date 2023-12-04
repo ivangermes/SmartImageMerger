@@ -1,6 +1,6 @@
 from enum import Enum
-from typing import Callable, Any
 from tempfile import NamedTemporaryFile
+from typing import Any, Callable
 
 import flet as ft
 
@@ -26,25 +26,6 @@ In any order.
 
 Best for scanned images, not suitable for panorama photos.
 """
-
-
-# TODO:
-# - [x] add disable button on process
-# - [x] add preloader
-# - [x] add input images preview
-# - [x] add output images preview
-# - [x] delete in files
-# - [x] make states
-# - [x] styling
-# - [x] refactoring
-# - [x] type cheickng
-# - [ ] add comments
-# - [ ] make async (?)
-# - [ ] exception and error handling
-# - [ ] add icon
-# - [ ] check that windows clear TMP files
-# - [ ] add russian language
-# - [ ] building for linux and windows
 
 
 class DeletableImage(ft.UserControl):
