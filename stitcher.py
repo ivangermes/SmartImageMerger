@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Self
+from typing import Callable, Any
 from tempfile import NamedTemporaryFile
 
 import flet as ft
@@ -37,7 +37,7 @@ Best for scanned images, not suitable for panorama photos.
 # - [x] make states
 # - [x] styling
 # - [x] refactoring
-# - [ ] type cheickng
+# - [x] type cheickng
 # - [ ] add comments
 # - [ ] make async (?)
 # - [ ] exception and error handling
@@ -48,14 +48,16 @@ Best for scanned images, not suitable for panorama photos.
 
 
 class DeletableImage(ft.UserControl):
-    def __init__(self, file_path, delete_image):
+    def __init__(
+        self, file_path: str, delete_image: Callable[["DeletableImage"], None]
+    ):
         super().__init__()
 
         self.file_path = file_path
 
         self.delete_image = delete_image
 
-    def build(self):
+    def build(self) -> ft.UserControl:
         return ft.Stack(
             [
                 ft.Container(
@@ -86,36 +88,35 @@ class DeletableImage(ft.UserControl):
             expand=True,
         )
 
-    def get_path(self):
+    def get_path(self) -> str:
         return self.file_path
 
-    def remove_clicked(self, e):
+    def remove_clicked(self, e: ft.ControlEvent):
         self.delete_image(self)
 
 
 class StitchApp(ft.UserControl):
-    def __init__(self, *args, **kargs):
-        self.parent_page = kargs["page"]
-        del kargs["page"]
+    states = Enum(
+        "states",
+        [
+            "START",
+            "IS_STITCHING_IMAGES",
+            "IS_NOT_STITCHING_IMAGES",
+            "READY",
+            "NOT_READY",
+            "WORKING",
+            "DONE",
+        ],
+    )
 
-        super().__init__(*args, **kargs)
+    def __init__(self, page: ft.Page):
+        self.parent_page = page
 
-        self.panorama = None
+        super().__init__()
 
-    def build(self):
-        self.states = Enum(
-            "states",
-            [
-                "START",
-                "IS_STITCHING_IMAGES",
-                "IS_NOT_STITCHING_IMAGES",
-                "READY",
-                "NOT_READY",
-                "WORKING",
-                "DONE",
-            ],
-        )
+        self.panorama: Any = None
 
+    def build(self) -> ft.UserControl:
         self.welcom_screen = ft.Ref[ft.Container]()
         self.stitching_images = ft.Ref[ft.GridView]()
         self.add_image_button = ft.Ref[ft.ElevatedButton]()
@@ -155,7 +156,7 @@ class StitchApp(ft.UserControl):
                                         WELCOME_TEXT,
                                         size=20,
                                         weight=ft.FontWeight.W_100,
-                                        text_align = ft.TextAlign.CENTER
+                                        text_align=ft.TextAlign.CENTER,
                                     ),
                                 ),
                             ],
@@ -252,7 +253,7 @@ class StitchApp(ft.UserControl):
             )
         ]
 
-    def set_state(self, state):  # TODO: add self.states
+    def set_state(self, state: "StitchApp.states") -> None:
         match state:
             case self.states.START:
                 self.welcom_screen = True
@@ -290,7 +291,7 @@ class StitchApp(ft.UserControl):
 
         self.update()
 
-    def stitching_image_delete(self, im):
+    def stitching_image_delete(self, im: DeletableImage) -> None:
         self.stitching_images.current.controls.remove(im)
         self.update()
 
@@ -319,7 +320,7 @@ class StitchApp(ft.UserControl):
         else:
             self.set_state(self.states.IS_NOT_STITCHING_IMAGES)
 
-    def on_process_button(self, e):
+    def on_process_button(self, e: ft.ControlEvent):
         self.set_state(self.states.WORKING)
 
         stitcher = AffineStitcher()
@@ -353,11 +354,16 @@ def main(page: ft.Page):
     page.padding = 30
     page.theme_mode = ft.ThemeMode.DARK
 
-    page.add(StitchApp(expand=True, page=page))
+    app = StitchApp(page=page)
+
+    # need to display layout correctly, since ft.UserControl is ft.Stack
+    app.expand = True
+    page.add(app)
 
 
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
 
-ft.app(target=main)
+if __name__ == "__main__":
+    ft.app(target=main)
