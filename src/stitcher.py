@@ -268,10 +268,7 @@ class StitchApp(ft.UserControl):
 
         self.update()
 
-    def stitching_image_delete(self, im: DeletableImage) -> None:
-        self.stitching_images.current.controls.remove(im)
-        self.update()
-
+    def on_stitching_images_change(self):
         if len(self.stitching_images.current.controls) > 1:
             self.set_state(self.states.READY)
         else:
@@ -281,6 +278,12 @@ class StitchApp(ft.UserControl):
             self.set_state(self.states.IS_STITCHING_IMAGES)
         else:
             self.set_state(self.states.IS_NOT_STITCHING_IMAGES)
+
+    def stitching_image_delete(self, im: DeletableImage) -> None:
+        self.stitching_images.current.controls.remove(im)
+        self.update()
+
+        self.on_stitching_images_change()
 
     def on_add_image_click(self, e: ft.ControlEvent):
         folder = None
@@ -302,28 +305,18 @@ class StitchApp(ft.UserControl):
                 self.stitching_images.current.controls.append(im)
 
             folder = str(PurePath(e.files[0].path).parent)
-            
             self.parent_page.client_storage.set("incoming_user_folder", folder)
 
-            if len(self.stitching_images.current.controls) > 1:
-                self.set_state(self.states.READY)
-            else:
-                self.set_state(self.states.NOT_READY)
-
-            if len(self.stitching_images.current.controls) > 0:
-                self.set_state(self.states.IS_STITCHING_IMAGES)
-            else:
-                self.set_state(self.states.IS_NOT_STITCHING_IMAGES)
+            self.on_stitching_images_change()
 
     def on_process_button(self, e: ft.ControlEvent):
         self.set_state(self.states.WORKING)
-
-        stitcher = AffineStitcher()
 
         ims_paths = [
             im_path.get_path() for im_path in self.stitching_images.current.controls
         ]
 
+        stitcher = AffineStitcher(crop=False)
         self.panorama = stitcher.stitch(ims_paths)
 
         result_image_tmp_file = NamedTemporaryFile(delete=False, suffix=".png")
@@ -367,11 +360,8 @@ def main(page: ft.Page):
 
     # need to display layout correctly, since ft.UserControl is ft.Stack
     app.expand = True
+    
     page.add(app)
-
-
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
 
 
 if __name__ == "__main__":
