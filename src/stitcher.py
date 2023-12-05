@@ -8,6 +8,7 @@ import flet as ft
 
 import cv2 as cv
 from stitching import AffineStitcher
+from stitching.stitching_error import StitchingWarning, StitchingError
 
 ALLOWED_EXTENSIONS = [
     "jpg",
@@ -57,6 +58,13 @@ class DeletableImage(ft.UserControl):
                     padding=ft.padding.only(left=12, right=12, top=40, bottom=12),
                 ),
                 ft.Container(
+                    padding = 10,
+                    content=ft.Text(
+                        Path(self.file_path).name
+                    ),
+                    alignment=ft.alignment.top_left,
+                ),
+                ft.Container(
                     content=ft.IconButton(
                         icon=ft.icons.CLOSE,
                         icon_color="gray",
@@ -87,6 +95,7 @@ class StitchApp(ft.UserControl):
             "NOT_READY",
             "WORKING",
             "DONE",
+            "PROCESS_ERROR"
         ],
     )
 
@@ -265,6 +274,12 @@ class StitchApp(ft.UserControl):
                 self.preloader.current.visible = False
                 self.result_image_container.current.visible = True
                 self.save_result_image_button.current.visible = True
+            
+            case self.states.PROCESS_ERROR:
+                self.preloader.current.visible = False
+                self.process_button.current.disabled = False
+                self.result_image_container.current.visible = False
+                self.save_result_image_button.current.visible = False
 
         self.update()
 
@@ -309,6 +324,25 @@ class StitchApp(ft.UserControl):
 
             self.on_stitching_images_change()
 
+    def show_error(self, text):
+        def close_dlg(e):
+            error_dlg.open = False
+            self.page.update()
+
+        error_dlg = ft.AlertDialog(
+            modal=True,
+            content=ft.Text(text, size=16),
+            content_padding=40,
+            actions_alignment=ft.MainAxisAlignment.END,
+            actions=[
+                ft.TextButton("Ok", on_click=close_dlg),
+            ],
+        )
+
+        self.page.dialog = error_dlg
+        error_dlg.open = True
+        self.page.update()
+
     def on_process_button(self, e: ft.ControlEvent):
         self.set_state(self.states.WORKING)
 
@@ -316,16 +350,26 @@ class StitchApp(ft.UserControl):
             im_path.get_path() for im_path in self.stitching_images.current.controls
         ]
 
-        stitcher = AffineStitcher(crop=False)
-        self.panorama = stitcher.stitch(ims_paths)
+        try:
+            stitcher = AffineStitcher(crop=False)
+            self.panorama = stitcher.stitch(ims_paths)
+        except StitchingError as er:
+            if "No match exceeds" in str(er).strip():
 
-        result_image_tmp_file = NamedTemporaryFile(delete=False, suffix=".png")
-        cv.imwrite(result_image_tmp_file.name, self.panorama)
+                error_text = "The images could not be merged.\nMaybe they are too different or have no overlap."
+            else:
+                error_text = str(er)
+            self.show_error(error_text)
+            self.set_state(self.states.PROCESS_ERROR)
 
-        self.result_image.current.src = result_image_tmp_file.name
-        self.update()
+        else:
+            result_image_tmp_file = NamedTemporaryFile(delete=False, suffix=".png")
+            cv.imwrite(result_image_tmp_file.name, self.panorama)
 
-        self.set_state(self.states.DONE)
+            self.result_image.current.src = result_image_tmp_file.name
+            self.update()
+
+            self.set_state(self.states.DONE)
 
     def on_save_image_click(self, e: ft.ControlEvent):
         folder = None
@@ -360,7 +404,7 @@ def main(page: ft.Page):
 
     # need to display layout correctly, since ft.UserControl is ft.Stack
     app.expand = True
-    
+
     page.add(app)
 
 
