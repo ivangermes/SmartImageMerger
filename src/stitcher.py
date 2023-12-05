@@ -1,4 +1,6 @@
 from enum import Enum
+import os
+from pathlib import Path, PurePath
 from tempfile import NamedTemporaryFile
 from typing import Any, Callable
 
@@ -52,9 +54,7 @@ class DeletableImage(ft.UserControl):
                     ),
                     image_fit=ft.ImageFit.CONTAIN,
                     alignment=ft.alignment.center,
-                    padding=ft.padding.only(
-                        left=12, right=12, top=40, bottom=12
-                    ),
+                    padding=ft.padding.only(left=12, right=12, top=40, bottom=12),
                 ),
                 ft.Container(
                     content=ft.IconButton(
@@ -110,6 +110,7 @@ class StitchApp(ft.UserControl):
 
         self.file_picker = ft.FilePicker(on_result=self.on_pick_files_dialog)
         self.file_saver = ft.FilePicker(on_result=self.on_save_dialog)
+
         self.parent_page.overlay.append(self.file_picker)
         self.parent_page.overlay.append(self.file_saver)
 
@@ -156,11 +157,7 @@ class StitchApp(ft.UserControl):
                     ref=self.add_image_button,
                     text="Add images",
                     icon="ADD_PHOTO_ALTERNATE_OUTLINED",
-                    on_click=lambda _: self.file_picker.pick_files(
-                        allow_multiple=True,
-                        dialog_title="Select images",
-                        allowed_extensions=ALLOWED_EXTENSIONS,
-                    ),
+                    on_click=self.on_add_image_click,
                 ),
                 ft.ElevatedButton(
                     ref=self.process_button,
@@ -217,10 +214,7 @@ class StitchApp(ft.UserControl):
                     height=50,
                     width=150,
                     icon="FILE_DOWNLOAD_OUTLINED",
-                    on_click=lambda _: self.file_saver.save_file(
-                        dialog_title="Save images",
-                        allowed_extensions=ALLOWED_EXTENSIONS,
-                    ),
+                    on_click=self.on_save_image_click,
                 ),
             ],
         )
@@ -288,20 +282,38 @@ class StitchApp(ft.UserControl):
         else:
             self.set_state(self.states.IS_NOT_STITCHING_IMAGES)
 
+    def on_add_image_click(self, e: ft.ControlEvent):
+        folder = None
+        if f := self.parent_page.client_storage.get("incoming_user_folder"):
+            if Path(f).is_dir():
+                folder = f + os.sep  # ft.FilePicker needs closing "/"
+
+        self.file_picker.pick_files(
+            initial_directory=folder,
+            allow_multiple=True,
+            dialog_title="Select images",
+            allowed_extensions=ALLOWED_EXTENSIONS,
+        )
+
     def on_pick_files_dialog(self, e: ft.FilePickerResultEvent):
-        for file in e.files:
-            im = DeletableImage(file.path, self.stitching_image_delete)
-            self.stitching_images.current.controls.append(im)
+        if e.files:
+            for file in e.files:
+                im = DeletableImage(file.path, self.stitching_image_delete)
+                self.stitching_images.current.controls.append(im)
 
-        if len(self.stitching_images.current.controls) > 1:
-            self.set_state(self.states.READY)
-        else:
-            self.set_state(self.states.NOT_READY)
+            folder = str(PurePath(e.files[0].path).parent)
+            
+            self.parent_page.client_storage.set("incoming_user_folder", folder)
 
-        if len(self.stitching_images.current.controls) > 0:
-            self.set_state(self.states.IS_STITCHING_IMAGES)
-        else:
-            self.set_state(self.states.IS_NOT_STITCHING_IMAGES)
+            if len(self.stitching_images.current.controls) > 1:
+                self.set_state(self.states.READY)
+            else:
+                self.set_state(self.states.NOT_READY)
+
+            if len(self.stitching_images.current.controls) > 0:
+                self.set_state(self.states.IS_STITCHING_IMAGES)
+            else:
+                self.set_state(self.states.IS_NOT_STITCHING_IMAGES)
 
     def on_process_button(self, e: ft.ControlEvent):
         self.set_state(self.states.WORKING)
@@ -309,8 +321,7 @@ class StitchApp(ft.UserControl):
         stitcher = AffineStitcher()
 
         ims_paths = [
-            im_path.get_path()
-            for im_path in self.stitching_images.current.controls
+            im_path.get_path() for im_path in self.stitching_images.current.controls
         ]
 
         self.panorama = stitcher.stitch(ims_paths)
@@ -323,9 +334,24 @@ class StitchApp(ft.UserControl):
 
         self.set_state(self.states.DONE)
 
+    def on_save_image_click(self, e: ft.ControlEvent):
+        folder = None
+        if f := self.parent_page.client_storage.get("outcoming_user_folder"):
+            if Path(f).is_dir():
+                folder = f + os.sep  # ft.FilePicker needs closing "/"
+
+        self.file_saver.save_file(
+            initial_directory=folder,
+            dialog_title="Save images",
+            allowed_extensions=ALLOWED_EXTENSIONS,
+        )
+
     def on_save_dialog(self, e: ft.FilePickerResultEvent):
         if e.path:
             cv.imwrite(e.path, self.panorama)
+
+            folder = str(Path(e.path).parent)
+            self.parent_page.client_storage.set("outcoming_user_folder", folder)
 
 
 def main(page: ft.Page):

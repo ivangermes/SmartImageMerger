@@ -12,11 +12,14 @@
 - [x] type cheickng
 - [x] add comments
 - [ ] exception and error handling
+- [ ] tune stitching
 - [ ] check that windows clear TMP files
-- [ ] make async (?)
+- [x] store and restore last file picker path
 - [ ] add icon
 - [ ] building for linux and windows
 - [ ] add translations
+- [ ] make async (?)
+- [ ] update flet to new version
 
 
 ## ft.Container behavior.
@@ -27,6 +30,3 @@ This is the case, at least for flet==0.14
 
 I haven't found a way to color the area in any other way than using ft.Container.
 To avoid confusing behavior, I use ft.Stack with two ft.Container. One for the background, the other to indent the picture.
-
-
-
