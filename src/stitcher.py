@@ -8,7 +8,7 @@ import flet as ft
 
 import cv2 as cv
 from stitching import AffineStitcher
-from stitching.stitching_error import StitchingWarning, StitchingError
+from stitching.stitching_error import StitchingError # StitchingWarning
 
 from assets import MAIN_ICON_B64
 
@@ -38,7 +38,8 @@ def match_exceptions(er):
     """
 
     if str(er).startswith("No match exceeds"):
-        error_text = "The images could not be merged.\nMaybe they are too different or have no overlap."
+        error_text = "The images could not be merged.\n" \
+            "Maybe they are too different or have no overlap."
     else:
         error_text = str(er)
 

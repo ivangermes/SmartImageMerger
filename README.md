@@ -1,4 +1,12 @@
 
+## Smart Image Merge
+
+Smart and simple application for automatic image merging (stitching). For example scans.
+
+Cross-platform (Windows, Linux, Android, Web).
+Stack: Flutter, Python, OpenCV.
+
+
 ## TODO:
 
 - [x] add disable button on process
@@ -17,6 +25,7 @@
 - [ ] check that windows clear TMP files
 - [x] store and restore last file picker path
 - [x] add icon
+- [ ] add CD
 - [ ] add warining handling
 - [ ] improve exception and error handling
 - [ ] add translations
@@ -24,6 +33,9 @@
 - [ ] add crop option
 - [ ] update flet to new version
 - [ ] memory usage improvment
+- [ ] add tests
+- [ ] add CI
+
 
 
 

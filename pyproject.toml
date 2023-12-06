@@ -1,15 +1,20 @@
 [project]
 name = "ImageStitcher"
-version = "0.3"
+version = "0.4"
 
 requires-python = ">=3.11"
 
 dependencies = [
   "flet==0.14.0",
+  "opencv-python>=4.8.0.0",
   "stitching==0.5.3",
-  # "opencv-python>=4.0.0.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+  "pyinstaller",
+  "pillow"
+]
 
 [tool.ruff]
 line-length = 88
