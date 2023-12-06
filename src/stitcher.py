@@ -10,6 +10,8 @@ import cv2 as cv
 from stitching import AffineStitcher
 from stitching.stitching_error import StitchingWarning, StitchingError
 
+from assets import MAIN_ICON_B64
+
 ALLOWED_EXTENSIONS = [
     "jpg",
     "jpeg",
@@ -24,11 +26,23 @@ ALLOWED_EXTENSIONS = [
 ]
 
 WELCOME_TEXT = """
-Add the images to be stitched together.
+Add two or more images to be stitched together.
 In any order.
 
 Best for scanned images, not suitable for panorama photos.
 """
+
+def match_exceptions(er):
+    """
+    Return human redeable error text
+    """
+
+    if str(er).startswith("No match exceeds"):
+        error_text = "The images could not be merged.\nMaybe they are too different or have no overlap."
+    else:
+        error_text = str(er)
+
+    return error_text
 
 
 class DeletableImage(ft.UserControl):
@@ -58,10 +72,8 @@ class DeletableImage(ft.UserControl):
                     padding=ft.padding.only(left=12, right=12, top=40, bottom=12),
                 ),
                 ft.Container(
-                    padding = 10,
-                    content=ft.Text(
-                        Path(self.file_path).name
-                    ),
+                    padding=10,
+                    content=ft.Text(Path(self.file_path).name),
                     alignment=ft.alignment.top_left,
                 ),
                 ft.Container(
@@ -95,7 +107,7 @@ class StitchApp(ft.UserControl):
             "NOT_READY",
             "WORKING",
             "DONE",
-            "PROCESS_ERROR"
+            "PROCESS_ERROR",
         ],
     )
 
@@ -143,11 +155,18 @@ class StitchApp(ft.UserControl):
                                 ft.Container(
                                     padding=40,
                                     alignment=ft.alignment.center,
-                                    content=ft.Text(
-                                        WELCOME_TEXT,
-                                        size=20,
-                                        weight=ft.FontWeight.W_100,
-                                        text_align=ft.TextAlign.CENTER,
+                                    content=ft.Column(
+                                        alignment=ft.MainAxisAlignment.CENTER,
+                                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                        controls=[
+                                            ft.Image(src_base64=MAIN_ICON_B64),
+                                            ft.Text(
+                                                WELCOME_TEXT,
+                                                size=20,
+                                                weight=ft.FontWeight.W_100,
+                                                text_align=ft.TextAlign.CENTER,
+                                            ),
+                                        ]
                                     ),
                                 ),
                             ],
@@ -171,7 +190,7 @@ class StitchApp(ft.UserControl):
                 ft.ElevatedButton(
                     ref=self.process_button,
                     text="Stitch",
-                    icon="JOIN_FULL",
+                    icon="BROKEN_IMAGE",
                     height=50,
                     width=150,
                     disabled=True,
@@ -274,7 +293,7 @@ class StitchApp(ft.UserControl):
                 self.preloader.current.visible = False
                 self.result_image_container.current.visible = True
                 self.save_result_image_button.current.visible = True
-            
+
             case self.states.PROCESS_ERROR:
                 self.preloader.current.visible = False
                 self.process_button.current.disabled = False
@@ -351,15 +370,10 @@ class StitchApp(ft.UserControl):
         ]
 
         try:
-            stitcher = AffineStitcher(crop=False)
+            stitcher = AffineStitcher(crop=False, compensator="gain")
             self.panorama = stitcher.stitch(ims_paths)
         except StitchingError as er:
-            if "No match exceeds" in str(er).strip():
-
-                error_text = "The images could not be merged.\nMaybe they are too different or have no overlap."
-            else:
-                error_text = str(er)
-            self.show_error(error_text)
+            self.show_error( match_exceptions(er) )
             self.set_state(self.states.PROCESS_ERROR)
 
         else:

@@ -11,15 +11,20 @@
 - [x] refactoring
 - [x] type cheickng
 - [x] add comments
-- [ ] exception and error handling
-- [ ] tune stitching
+- [x] basic exception and error handling
+- [x] tune stitching
+- [ ] building for linux and windows
 - [ ] check that windows clear TMP files
 - [x] store and restore last file picker path
-- [ ] add icon
-- [ ] building for linux and windows
+- [x] add icon
+- [ ] add warining handling
+- [ ] improve exception and error handling
 - [ ] add translations
 - [ ] make async (?)
+- [ ] add crop option
 - [ ] update flet to new version
+- [ ] memory usage improvment
+
 
 
 ## ft.Container behavior.
