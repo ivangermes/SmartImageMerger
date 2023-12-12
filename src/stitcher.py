@@ -150,7 +150,7 @@ class StitchApp(ft.UserControl):
                             visible=True,
                             controls=[
                                 ft.Container(
-                                    border=ft.border.all(1, "#333333"),
+                                    border=ft.border.all(1, "#555555"),
                                     border_radius=ft.border_radius.all(5),
                                 ),
                                 ft.Container(
@@ -164,7 +164,7 @@ class StitchApp(ft.UserControl):
                                             ft.Text(
                                                 WELCOME_TEXT,
                                                 size=20,
-                                                weight=ft.FontWeight.W_100,
+                                                weight=ft.FontWeight.W_300,
                                                 text_align=ft.TextAlign.CENTER,
                                             ),
                                         ]
@@ -186,6 +186,8 @@ class StitchApp(ft.UserControl):
                     ref=self.add_image_button,
                     text="Add images",
                     icon="ADD_PHOTO_ALTERNATE_OUTLINED",
+                    bgcolor="#5A7AFF",
+                    color="#000000",
                     on_click=self.on_add_image_click,
                 ),
                 ft.ElevatedButton(
@@ -196,6 +198,8 @@ class StitchApp(ft.UserControl):
                     width=150,
                     disabled=True,
                     on_click=self.on_process_button,
+                    bgcolor="#5A7AFF",
+                    color="#000000",
                 ),
             ],
         )
@@ -244,6 +248,8 @@ class StitchApp(ft.UserControl):
                     width=150,
                     icon="FILE_DOWNLOAD_OUTLINED",
                     on_click=self.on_save_image_click,
+                    bgcolor="#5A7AFF",
+                    color="#000000",
                 ),
             ],
         )
@@ -414,6 +420,8 @@ def main(page: ft.Page):
 
     page.padding = 30
     page.theme_mode = ft.ThemeMode.DARK
+    page.theme = ft.theme.Theme(color_scheme_seed="#1843ff")
+    page.update()
 
     app = StitchApp(page=page)
 
