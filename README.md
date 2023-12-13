@@ -3,7 +3,11 @@
 
 Smart and simple application for automatic image merging (stitching).  
 For example scans.
+  
+<img src='https://github.com/ivangermes/SmartImageMerge/assets/645880/cf6a57ae-334e-4029-adea-56d303db98f0' width='800'>
 
+
+## About
 Cross-platform ( Windows, Linux, Android, Web ).
 
 Tech stack:
