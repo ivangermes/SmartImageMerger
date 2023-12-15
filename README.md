@@ -2,15 +2,16 @@
 ## Smart Image Merge
 
 Smart and simple application for automatic image merging (stitching).  
-For example scans.
-  
+
+<br/><br/>
 <img src='https://github.com/ivangermes/SmartImageMerge/assets/645880/cf6a57ae-334e-4029-adea-56d303db98f0' width='800'>
-<br/>
+<br/><br/>
   
 If you have large pictures and an A4 flatbed scanner, you scan the pictures piece by piece.  
 It is difficult to merge them manually because it is impossible to arrange them perfectly evenly.  
 This program combines such images automatically.  
 Suitable for everything that is scanned: pictures, maps, posters, etc.  
+
 
 ## About
 Cross-platform ( Windows, Linux, Android, Web ).
@@ -19,6 +20,11 @@ Tech stack:
 - OpenCV
 - Flutter
 - Python
+
+## Install
+
+Latest Linux and Windows versions here: https://github.com/ivangermes/SmartImageMerge/releases  
+Just download and run.
 
 
 ### Dev notes
@@ -32,7 +38,7 @@ I haven't found a way to color the area in any other way than using ft.Container
 To avoid confusing behavior, I use ft.Stack with two ft.Container. One for the background, the other to indent the picture.
 
 #### Build executable files
-`flet pack src\stitcher.py --name stitcher --icon icon.png --product-name SmartImageMerge --file-description SmartImageMerge --product-version`
+`flet pack src/stitcher.py --name stitcher --icon icon.png --product-name SmartImageMerge --file-description SmartImageMerge --product-version XXX`
 
 
 ### TODO:
@@ -54,15 +60,16 @@ To avoid confusing behavior, I use ft.Stack with two ft.Container. One for the b
 - [ ] check that windows clear TMP files
 - [x] store and restore last file picker path
 - [x] add icon
-- [x] add screenshot or video 
+- [x] add screenshot or video
+- [ ] improve rotated images stitchig
 - [ ] add warining handling
 - [ ] improve exception and error handling
-- [ ] improve rotated images stitchig
-- [ ] add translations
-- [ ] make async (?)
-- [ ] add crop option
-- [ ] update flet to latest version
-- [ ] memory usage improvment
 - [ ] add tests
 - [ ] add CI
 - [ ] add CD
+- [ ] add crop option
+- [ ] memory usage improvment
+- [ ] update flet to latest version
+- [ ] add translations
+- [ ] make async (?)
+- [ ] sign windows version
