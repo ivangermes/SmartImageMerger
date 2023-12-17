@@ -1,16 +1,16 @@
 
 ## Smart Image Merge
 
-Smart and simple application for automatic image merging (stitching).  
+A smart and simple application to merge (stitch) images automatically.  
 
 <br/><br/>
 <img src='https://github.com/ivangermes/SmartImageMerge/assets/645880/cf6a57ae-334e-4029-adea-56d303db98f0' width='800'>
 <br/><br/>
   
-If you have large pictures and an A4 flatbed scanner, you scan the pictures piece by piece.  
-It is difficult to merge them manually because it is impossible to arrange them perfectly evenly.  
-This program combines such images automatically.  
-Suitable for everything that is scanned: pictures, maps, posters, etc.  
+If you have some oversized images that don't fit your flatbed scanner, the app lets you merge their scanned fragments.  
+Merging the parts manually is difficult, since it's hard to arrange them perfectly even.   
+This app joins such images automatically.  
+Suitable for all things scanned: photos, drawings, maps, posters, etc.   
 
 
 ## About
