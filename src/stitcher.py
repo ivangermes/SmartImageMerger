@@ -413,7 +413,7 @@ class StitchApp(ft.UserControl):
 
 
 def main(page: ft.Page):
-    page.title = "Smart Image Merge"
+    page.title = "Smart Image Merger"
 
     page.window_min_width = 900
     page.window_min_height = 600

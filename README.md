@@ -1,5 +1,5 @@
 
-## Smart Image Merge
+## Smart Image Merger
 
 A smart and simple application to merge (stitch) images automatically.  
 
@@ -38,7 +38,7 @@ I haven't found a way to color the area in any other way than using ft.Container
 To avoid confusing behavior, I use ft.Stack with two ft.Container. One for the background, the other to indent the picture.
 
 #### Build executable files
-`flet pack src/stitcher.py --name stitcher --icon icon.png --product-name SmartImageMerge --file-description SmartImageMerge --product-version XXX`
+`flet pack src/stitcher.py --name stitcher --icon icon.png --product-name SmartImageMerger --file-description SmartImageMerger --product-version XXX`
 
 
 ### TODO:
