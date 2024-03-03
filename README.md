@@ -45,7 +45,7 @@ For Linux:
 For Windows:
 `flet build --project stitcher --product "Smart Image Merger" --build-version xxx --module-name /src/stitcher.py windows`
 
-More build info
+More build info: https://flet.dev/docs/guides/python/packaging-app-for-distribution
 
 
 ### TODO:
