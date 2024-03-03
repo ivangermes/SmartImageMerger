@@ -3,8 +3,8 @@
 
 A smart and simple application to merge (stitch) images automatically.  
 
-<br/><br/>
-<img src='https://github.com/ivangermes/SmartImageMerge/assets/645880/cf6a57ae-334e-4029-adea-56d303db98f0' width='800'>
+<br/>
+<img src='https://github.com/ivangermes/SmartImageMerge/assets/645880/c120c35f-c5ec-4b38-b598-d8bf64760fd9' width='800'>
 <br/><br/>
   
 If you have some oversized images that don't fit your flatbed scanner, the app lets you merge their scanned fragments.  
