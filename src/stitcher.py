@@ -8,7 +8,7 @@ import flet as ft
 
 import cv2 as cv
 from stitching import AffineStitcher
-from stitching.stitching_error import StitchingError # StitchingWarning
+from stitching.stitching_error import StitchingError  # StitchingWarning
 
 from assets import MAIN_ICON_B64
 
@@ -26,11 +26,12 @@ ALLOWED_EXTENSIONS = [
 ]
 
 WELCOME_TEXT = """
-Add two or more images to be stitched together.
+Add two or more images to be merged together.
 In any order.
 
 Best for scanned images, not suitable for panorama photos.
 """
+
 
 def match_exceptions(er):
     """
@@ -38,8 +39,10 @@ def match_exceptions(er):
     """
 
     if str(er).startswith("No match exceeds"):
-        error_text = "The images could not be merged.\n" \
+        error_text = (
+            "The images could not be merged.\n"
             "Maybe they are too different or have no overlap."
+        )
     else:
         error_text = str(er)
 
@@ -140,7 +143,7 @@ class StitchApp(ft.UserControl):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             expand=True,
             controls=[
-                ft.Text("Images to stitch"),
+                ft.Text("Images to merge"),
                 ft.Stack(
                     expand=True,
                     controls=[
@@ -160,14 +163,14 @@ class StitchApp(ft.UserControl):
                                         alignment=ft.MainAxisAlignment.CENTER,
                                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                                         controls=[
-                                            ft.Image(src_base64=MAIN_ICON_B64),
+                                            ft.Image("welcom.png"),
                                             ft.Text(
                                                 WELCOME_TEXT,
                                                 size=20,
                                                 weight=ft.FontWeight.W_300,
                                                 text_align=ft.TextAlign.CENTER,
                                             ),
-                                        ]
+                                        ],
                                     ),
                                 ),
                             ],
@@ -192,7 +195,7 @@ class StitchApp(ft.UserControl):
                 ),
                 ft.ElevatedButton(
                     ref=self.process_button,
-                    text="Stitch",
+                    text="Merge",
                     icon="BROKEN_IMAGE",
                     height=50,
                     width=150,
@@ -245,7 +248,7 @@ class StitchApp(ft.UserControl):
                     visible=False,
                     text="Save image",
                     height=50,
-                    width=150,
+                    width=200,
                     icon="FILE_DOWNLOAD_OUTLINED",
                     on_click=self.on_save_image_click,
                     bgcolor="#5A7AFF",
@@ -328,12 +331,18 @@ class StitchApp(ft.UserControl):
 
     def on_add_image_click(self, e: ft.ControlEvent):
         folder = None
-        if f := self.parent_page.client_storage.get("incoming_user_folder"):
+
+        if f := self.parent_page.client_storage.get(
+            "SmartImageMerger.incoming_user_folder"
+        ):
             if Path(f).is_dir():
-                folder = f + os.sep  # ft.FilePicker needs closing "/"
+                folder = f
+
+        if not folder:
+            folder = str(Path.home())
 
         self.file_picker.pick_files(
-            initial_directory=folder,
+            initial_directory=folder + os.sep,  # ft.FilePicker needs closing "/"
             allow_multiple=True,
             dialog_title="Select images",
             allowed_extensions=ALLOWED_EXTENSIONS,
@@ -346,7 +355,9 @@ class StitchApp(ft.UserControl):
                 self.stitching_images.current.controls.append(im)
 
             folder = str(PurePath(e.files[0].path).parent)
-            self.parent_page.client_storage.set("incoming_user_folder", folder)
+            self.parent_page.client_storage.set(
+                "SmartImageMerger.incoming_user_folder", folder
+            )
 
             self.on_stitching_images_change()
 
@@ -380,7 +391,7 @@ class StitchApp(ft.UserControl):
             stitcher = AffineStitcher(crop=False, compensator="gain")
             self.panorama = stitcher.stitch(ims_paths)
         except StitchingError as er:
-            self.show_error( match_exceptions(er) )
+            self.show_error(match_exceptions(er))
             self.set_state(self.states.PROCESS_ERROR)
 
         else:
@@ -394,12 +405,14 @@ class StitchApp(ft.UserControl):
 
     def on_save_image_click(self, e: ft.ControlEvent):
         folder = None
-        if f := self.parent_page.client_storage.get("outcoming_user_folder"):
+        if f := self.parent_page.client_storage.get(
+            "SmartImageMerger.incoming_user_folder"
+        ):
             if Path(f).is_dir():
-                folder = f + os.sep  # ft.FilePicker needs closing "/"
+                folder = f
 
         self.file_saver.save_file(
-            initial_directory=folder,
+            initial_directory=folder + os.sep,  # ft.FilePicker needs closing "/"
             dialog_title="Save images",
             allowed_extensions=ALLOWED_EXTENSIONS,
         )
@@ -416,7 +429,7 @@ def main(page: ft.Page):
     page.title = "Smart Image Merger"
 
     page.window_min_width = 900
-    page.window_min_height = 600
+    page.window_min_height = 650
 
     page.padding = 30
     page.theme_mode = ft.ThemeMode.DARK

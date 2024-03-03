@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Terminal=false
+Name=Smart Image Merger
+Comment=A smart and simple application to merge (stitch) images automatically
+Categories=Graphics;2DGraphics;RasterGraphics;
+Icon=/home/WRITE_USER/Applications/SmartImageMerger/icon.png
+Exec=/home/WRITE_USER/Applications/SmartImageMerger/stitcher

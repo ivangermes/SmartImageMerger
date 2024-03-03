@@ -24,7 +24,7 @@ Tech stack:
 ## Install
 
 Latest Linux and Windows versions here: https://github.com/ivangermes/SmartImageMerge/releases  
-Just download and run.
+Just download, unzip and run.
 
 
 ### Dev notes
@@ -38,7 +38,14 @@ I haven't found a way to color the area in any other way than using ft.Container
 To avoid confusing behavior, I use ft.Stack with two ft.Container. One for the background, the other to indent the picture.
 
 #### Build executable files
-`flet pack src/stitcher.py --name stitcher --icon icon.png --product-name SmartImageMerger --file-description SmartImageMerger --product-version XXX`
+
+For Linux:  
+`flet build --project stitcher --product "Smart Image Merger" --build-version xxx --module-name /src/stitcher.py linux`
+
+For Windows:
+`flet build --project stitcher --product "Smart Image Merger" --build-version xxx --module-name /src/stitcher.py windows`
+
+More build info
 
 
 ### TODO:
@@ -55,8 +62,8 @@ To avoid confusing behavior, I use ft.Stack with two ft.Container. One for the b
 - [x] add comments
 - [x] basic exception and error handling
 - [x] tune stitching
-- [ ] building for linux and windows
-- [ ] add video tutorial
+- [x] building for linux and windows
+- [x] move to new build system
 - [ ] check that windows clear TMP files
 - [x] store and restore last file picker path
 - [x] add icon
@@ -69,7 +76,5 @@ To avoid confusing behavior, I use ft.Stack with two ft.Container. One for the b
 - [ ] add CD
 - [ ] add crop option
 - [ ] memory usage improvment
-- [ ] update flet to latest version
 - [ ] add translations
 - [ ] make async (?)
-- [ ] sign windows version

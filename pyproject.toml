@@ -1,20 +1,22 @@
 [project]
-name = "ImageStitcher"
-version = "0.4"
+name = "SmartImageMerger"
+version = "0.4.1"
+description = "A smart and simple application to merge (stitch) images automatically."
 
 requires-python = ">=3.11"
 
 dependencies = [
-  "flet==0.15.0",
+  "flet==0.20.2",
   "opencv-python>=4.8.0.0",
   "stitching==0.5.3",
 ]
 
 [project.optional-dependencies]
 dev = [
-  "pyinstaller",
-  "pillow"
 ]
+
+[tool.app]
+name = "Smart Image Merger"
 
 [tool.ruff]
 line-length = 88
