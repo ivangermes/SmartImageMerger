@@ -40,12 +40,12 @@ To avoid confusing behavior, I use ft.Stack with two ft.Container. One for the b
 #### Build executable files
 
 For Linux:  
-`flet build --project stitcher --product "Smart Image Merger" --build-version xxx --module-name /src/stitcher.py linux`
+`flet build --project stitcher --product "Smart Image Merger" --build-version xxx --module-name stitcher.py linux`
 
 For Windows:
-`flet build --project stitcher --product "Smart Image Merger" --build-version xxx --module-name /src/stitcher.py windows`
+`flet build --project stitcher --product "Smart Image Merger" --build-version xxx --module-name titcher.py windows`
 
-More build info: https://flet.dev/docs/guides/python/packaging-app-for-distribution
+Read https://flet.dev/docs/guides/python/packaging-app-for-distribution
 
 
 ### TODO:

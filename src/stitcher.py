@@ -10,8 +10,6 @@ import cv2 as cv
 from stitching import AffineStitcher
 from stitching.stitching_error import StitchingError  # StitchingWarning
 
-from assets import MAIN_ICON_B64
-
 ALLOWED_EXTENSIONS = [
     "jpg",
     "jpeg",
@@ -33,7 +31,7 @@ Best for scanned images, not suitable for panorama photos.
 """
 
 
-def match_exceptions(er):
+def humanize_exceptions(er):
     """
     Return human redeable error text
     """
@@ -43,6 +41,17 @@ def match_exceptions(er):
             "The images could not be merged.\n"
             "Maybe they are too different or have no overlap."
         )
+    elif "could not find a writer for the specified extension" in str(er):
+        error_text = (
+            "Cannot write image. Wrong file type.\n"
+            "\n"
+            "Specify the correct extension for the image.\n"
+            "For example: png or jpeg"
+        )
+    elif "Cannot write image" in str(er):
+        error_text = str(er)
+    elif "Cannot read image" in str(er):
+        error_text = str(er)
     else:
         error_text = str(er)
 
@@ -391,9 +400,8 @@ class StitchApp(ft.UserControl):
             stitcher = AffineStitcher(crop=False, compensator="gain")
             self.panorama = stitcher.stitch(ims_paths)
         except StitchingError as er:
-            self.show_error(match_exceptions(er))
+            self.show_error(humanize_exceptions(er))
             self.set_state(self.states.PROCESS_ERROR)
-
         else:
             result_image_tmp_file = NamedTemporaryFile(delete=False, suffix=".png")
             cv.imwrite(result_image_tmp_file.name, self.panorama)
@@ -419,10 +427,17 @@ class StitchApp(ft.UserControl):
 
     def on_save_dialog(self, e: ft.FilePickerResultEvent):
         if e.path:
-            cv.imwrite(e.path, self.panorama)
-
-            folder = str(Path(e.path).parent)
-            self.parent_page.client_storage.set("outcoming_user_folder", folder)
+            try:
+                rez = cv.imwrite(e.path, self.panorama)
+                if not rez:
+                    raise StitchingError("Cannot write image " + e.path)
+            except StitchingError as er:
+                self.show_error(humanize_exceptions(er))
+            except BaseException as er:
+                self.show_error(humanize_exceptions(er))
+            else:
+                folder = str(Path(e.path).parent)
+                self.parent_page.client_storage.set("outcoming_user_folder", folder)
 
 
 def main(page: ft.Page):
