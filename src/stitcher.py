@@ -7,6 +7,7 @@ from typing import Any, Callable
 import flet as ft
 
 import cv2 as cv
+import numpy
 from stitching import AffineStitcher
 from stitching.stitching_error import StitchingError  # StitchingWarning
 
@@ -48,6 +49,13 @@ def humanize_exceptions(er):
             "Specify the correct extension for the image.\n"
             "For example: png or jpeg"
         )
+    elif "could not find encoder for the specified extension" in str(er):
+        error_text = (
+            "Cannot write image. Wrong file type.\n"
+            "\n"
+            "Specify the correct extension for the image.\n"
+            "For example: png or jpeg"
+        )
     elif "Cannot write image" in str(er):
         error_text = str(er)
     elif "Cannot read image" in str(er):
@@ -56,6 +64,10 @@ def humanize_exceptions(er):
         error_text = str(er)
 
     return error_text
+
+
+class MergerError(Exception):
+    pass
 
 
 class DeletableImage(ft.UserControl):
@@ -392,14 +404,34 @@ class StitchApp(ft.UserControl):
     def on_process_button(self, e: ft.ControlEvent):
         self.set_state(self.states.WORKING)
 
-        ims_paths = [
-            im_path.get_path() for im_path in self.stitching_images.current.controls
-        ]
-
         try:
+            imgs = []
+            for im_path in self.stitching_images.current.controls:
+                # cv.imread() has error with unicode paths on windows platform
+                # https://github.com/opencv/opencv/issues/18305
+                # so, we use a workaround
+                img = cv.imdecode(
+                    numpy.fromfile(im_path.get_path(), dtype=numpy.uint8),
+                    cv.IMREAD_UNCHANGED,
+                )
+                if img is None:
+                    raise MergerError("Bad image " + im_path.get_path())
+
+                imgs.append(img)
+
             stitcher = AffineStitcher(crop=False, compensator="gain")
-            self.panorama = stitcher.stitch(ims_paths)
+            self.panorama = stitcher.stitch(imgs)
+
+        except MergerError as er:
+            self.show_error(humanize_exceptions(er))
+            self.set_state(self.states.PROCESS_ERROR)
         except StitchingError as er:
+            self.show_error(humanize_exceptions(er))
+            self.set_state(self.states.PROCESS_ERROR)
+        except OSError as er:
+            self.show_error(humanize_exceptions(er))
+            self.set_state(self.states.PROCESS_ERROR)
+        except Exception as er:
             self.show_error(humanize_exceptions(er))
             self.set_state(self.states.PROCESS_ERROR)
         else:
@@ -428,16 +460,23 @@ class StitchApp(ft.UserControl):
     def on_save_dialog(self, e: ft.FilePickerResultEvent):
         if e.path:
             try:
-                rez = cv.imwrite(e.path, self.panorama)
-                if not rez:
-                    raise StitchingError("Cannot write image " + e.path)
-            except StitchingError as er:
+                # cv.imwrite() has error with unicode paths on windows platform
+                # https://github.com/opencv/opencv/issues/18305
+                # so, we use a workaround
+                suffix = str(Path(e.path).suffix)
+                is_success, im_buf_arr = cv.imencode(suffix, self.panorama)
+                if not is_success:
+                    raise MergerError("Cannot write image " + e.path)
+                im_buf_arr.tofile(e.path)
+            except cv.error as er:
                 self.show_error(humanize_exceptions(er))
-            except BaseException as er:
+            except MergerError as er:
                 self.show_error(humanize_exceptions(er))
-            else:
-                folder = str(Path(e.path).parent)
-                self.parent_page.client_storage.set("outcoming_user_folder", folder)
+            except OSError as er:
+                self.show_error(humanize_exceptions(er))
+                self.set_state(self.states.PROCESS_ERROR)
+            except Exception as er:
+                self.show_error(humanize_exceptions(er))
 
 
 def main(page: ft.Page):
