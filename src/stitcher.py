@@ -455,6 +455,7 @@ class StitchApp(ft.UserControl):
             initial_directory=folder + os.sep,  # ft.FilePicker needs closing "/"
             dialog_title="Save images",
             allowed_extensions=ALLOWED_EXTENSIONS,
+            file_name=".png"
         )
 
     def on_save_dialog(self, e: ft.FilePickerResultEvent):
