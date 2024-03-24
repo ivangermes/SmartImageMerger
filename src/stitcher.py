@@ -24,6 +24,7 @@ ALLOWED_EXTENSIONS = [
     "TIFF",
 ]
 
+
 WELCOME_TEXT = """
 Add two or more images to be merged together.
 In any order.
@@ -31,6 +32,28 @@ In any order.
 Best for scanned images, not suitable for panorama photos.
 """
 
+def cv_load_image(img_path: str):
+    # cv.imread() has error with unicode paths on windows platform
+    # https://github.com/opencv/opencv/issues/18305
+    # so, we use a workaround
+    img = cv.imdecode(
+        numpy.fromfile(img_path, dtype=numpy.uint8),
+        cv.IMREAD_UNCHANGED,
+    )
+    if img is None:
+        raise MergerError("Bad image " + img_path)
+
+    return img
+
+def cv_save_image(img: numpy.ndarray, img_path: str):
+    # cv.imwrite() has error with unicode paths on windows platform
+    # https://github.com/opencv/opencv/issues/18305
+    # so, we use a workaround
+    suffix = str(Path(img_path).suffix)
+    is_success, im_buf_arr = cv.imencode(suffix, img)
+    if not is_success:
+        raise MergerError("Cannot write image " + img_path)
+    im_buf_arr.tofile(img_path)
 
 def humanize_exceptions(er):
     """
@@ -407,16 +430,7 @@ class StitchApp(ft.UserControl):
         try:
             imgs = []
             for im_path in self.stitching_images.current.controls:
-                # cv.imread() has error with unicode paths on windows platform
-                # https://github.com/opencv/opencv/issues/18305
-                # so, we use a workaround
-                img = cv.imdecode(
-                    numpy.fromfile(im_path.get_path(), dtype=numpy.uint8),
-                    cv.IMREAD_UNCHANGED,
-                )
-                if img is None:
-                    raise MergerError("Bad image " + im_path.get_path())
-
+                img = cv_load_image(im_path.get_path())
                 imgs.append(img)
 
             stitcher = AffineStitcher(crop=False, compensator="gain")
@@ -461,14 +475,7 @@ class StitchApp(ft.UserControl):
     def on_save_dialog(self, e: ft.FilePickerResultEvent):
         if e.path:
             try:
-                # cv.imwrite() has error with unicode paths on windows platform
-                # https://github.com/opencv/opencv/issues/18305
-                # so, we use a workaround
-                suffix = str(Path(e.path).suffix)
-                is_success, im_buf_arr = cv.imencode(suffix, self.panorama)
-                if not is_success:
-                    raise MergerError("Cannot write image " + e.path)
-                im_buf_arr.tofile(e.path)
+                cv_save_image(self.panorama, e.path)
             except cv.error as er:
                 self.show_error(humanize_exceptions(er))
             except MergerError as er:
