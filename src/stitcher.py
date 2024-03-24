@@ -6,6 +6,8 @@ from typing import Any, Callable
 
 import flet as ft
 
+import PIL
+from PIL import Image 
 import cv2 as cv
 import numpy
 from stitching import AffineStitcher
@@ -23,6 +25,8 @@ ALLOWED_EXTENSIONS = [
     "TIF",
     "TIFF",
 ]
+
+SUPPORTED_IMAGES_FORMATS = ['JPEG', 'PNG', 'TIFF']
 
 
 WELCOME_TEXT = """
@@ -103,6 +107,28 @@ class DeletableImage(ft.UserControl):
 
         self.delete_image = delete_image
 
+        self.preview_image_path = self.file_path
+        
+        try:
+            img = Image.open(self.file_path)
+        except PIL.UnidentifiedImageError:
+            raise MergerError("Bad image " + self.file_path)
+        except OSError:
+            raise MergerError("Cannot read image " + self.file_path)
+
+        if img.format not in SUPPORTED_IMAGES_FORMATS:
+            raise MergerError("Bad image " + self.file_path)
+
+        # Flet can only display a limited set of image formats.
+        # So we make preview files.
+        if img.format not in ['JPEG', 'PNG'] :
+            preview_maxsize = (512, 512)
+            img.thumbnail(preview_maxsize)
+            tmp_file = NamedTemporaryFile(delete=False, suffix=".png")
+            img.save(tmp_file)
+            self.preview_image_path = tmp_file.name
+        
+
     def build(self) -> ft.UserControl:
         return ft.Stack(
             [
@@ -113,7 +139,7 @@ class DeletableImage(ft.UserControl):
                 ),
                 ft.Container(
                     content=ft.Image(
-                        src=self.file_path,
+                        src=self.preview_image_path,
                     ),
                     image_fit=ft.ImageFit.CONTAIN,
                     alignment=ft.alignment.center,
@@ -395,8 +421,14 @@ class StitchApp(ft.UserControl):
     def on_pick_files_dialog(self, e: ft.FilePickerResultEvent):
         if e.files:
             for file in e.files:
-                im = DeletableImage(file.path, self.stitching_image_delete)
-                self.stitching_images.current.controls.append(im)
+                try:
+                    im = DeletableImage(file.path, self.stitching_image_delete)
+                except MergerError as er:
+                    self.show_error(humanize_exceptions(er))
+                except Exception as er:
+                    self.show_error(humanize_exceptions(er))
+                else:
+                    self.stitching_images.current.controls.append(im)
 
             folder = str(PurePath(e.files[0].path).parent)
             self.parent_page.client_storage.set(
